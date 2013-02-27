@@ -252,7 +252,6 @@ namespace Facebook.Controllers
                             {
                                 model.significant_other = item.fql_result_set.FirstOrDefault();
                             }
-
                             //else if (item.name.Equals(profilePicFieldName))
                             //{
                             //    List<ProfilePicFql> pictures = JsonConvert.DeserializeObject<List<ProfilePicFql>>(item.fql_result_set);
@@ -261,7 +260,6 @@ namespace Facebook.Controllers
                             //        friend.pic = pictures.FirstOrDefault(p => p.id.Equals(friend.uid)).url;
                             //    }
                             //}
-
                         }
                     }
                 }
