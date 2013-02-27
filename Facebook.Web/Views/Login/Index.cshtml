@@ -1,0 +1,144 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+@section facebook{
+    <div id="fb-root"></div>
+    <script>
+        function SubmitAccessToken(response) {
+            var uid = response.authResponse.userID;
+            var accessToken = response.authResponse.accessToken;
+            var expiresIn = response.authResponse.expiresIn;
+            var signedRequest = response.authResponse.signedRequest;
+
+            // Do a post to the server to finish the logon
+            // This is a form post since we don't want to use AJAX
+            var form = document.createElement('form');
+            form.setAttribute('method', 'post');
+            form.setAttribute('action', '/Facebook/ProcessJSResponse');
+
+            var fieldaccessToken = document.createElement('input');
+            fieldaccessToken.setAttribute('type', 'hidden');
+            fieldaccessToken.setAttribute('name', 'accessToken');
+            fieldaccessToken.setAttribute('value', accessToken);
+            form.appendChild(fieldaccessToken);
+
+            var fieldexpiresIn = document.createElement('input');
+            fieldexpiresIn.setAttribute('type', 'hidden');
+            fieldexpiresIn.setAttribute('name', 'expiresIn');
+            fieldexpiresIn.setAttribute('value', expiresIn);
+            form.appendChild(fieldexpiresIn);
+
+            var fieldsignedRequest = document.createElement('input');
+            fieldsignedRequest.setAttribute('type', 'hidden');
+            fieldsignedRequest.setAttribute('name', 'signedRequest');
+            fieldsignedRequest.setAttribute('value', signedRequest);
+            form.appendChild(fieldsignedRequest);
+
+            var fielduserID = document.createElement('input');
+            fielduserID.setAttribute('type', 'hidden');
+            fielduserID.setAttribute('name', 'userID');
+            fielduserID.setAttribute('value', uid);
+            form.appendChild(fielduserID);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '266085756857709', // App ID
+                channelUrl: '//test.ronaldwisnuhariyanto.com/channel.html',
+                status: true, // check login status
+                cookie: true, // enable cookies to allow the server to access the session
+                xfbml: true  // parse XFBML
+            });
+
+            FB.getLoginStatus(function (response) {
+                if (response.status === 'connected') {
+                    // connected
+                    console.log('connected');
+                    document.getElementById('logged-in').style.display = 'block';
+                    document.getElementById('not-authorised').style.display = 'none';
+                    document.getElementById('not-logged-in').style.display = 'none';
+                    SubmitAccessToken(response);
+                } else if (response.status === 'not_authorized') {
+                    // not_authorized
+                    console.log('not_authorized');
+                    document.getElementById('logged-in').style.display = 'none';
+                    document.getElementById('not-authorised').style.display = 'block';
+                    document.getElementById('not-logged-in').style.display = 'none';
+                } else {
+                    // not_logged_in
+                    console.log('The user isn\'t logged in to Facebook');
+                    document.getElementById('logged-in').style.display = 'none';
+                    document.getElementById('not-authorised').style.display = 'none';
+                    document.getElementById('not-logged-in').style.display = 'block';
+                }
+            });
+
+            // Additional initialization code here
+            FB.Event.subscribe('auth.authResponseChange', function (response) {
+                if (response.status === 'connected') {
+                    console.log('connected');
+                    document.getElementById('logged-in').style.display = 'block';
+                    document.getElementById('not-authorised').style.display = 'none';
+                    document.getElementById('not-logged-in').style.display = 'none';
+                    SubmitAccessToken(response);
+                } else if (response.status === 'not_authorized') {
+                    // The user is logged in to Facebook
+                    // but has not authenticated your app
+                    console.log('not_authorized');
+                    document.getElementById('logged-in').style.display = 'none';
+                    document.getElementById('not-authorised').style.display = 'block';
+                    document.getElementById('not-logged-in').style.display = 'none';
+                } else {
+                    console.log('The user isn\'t logged in to Facebook');
+                    // The user isn't logged in to Facebook
+                    document.getElementById('logged-in').style.display = 'none';
+                    document.getElementById('not-authorised').style.display = 'none';
+                    document.getElementById('not-logged-in').style.display = 'block';
+                }
+            });
+        };
+
+        // Load the SDK Asynchronously
+        (function (d) {
+            var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+            if (d.getElementById(id)) { return; }
+            js = d.createElement('script'); js.id = id; js.async = true;
+            js.src = "//connect.facebook.net/en_US/all.js";
+            ref.parentNode.insertBefore(js, ref);
+        }(document));
+    </script>
+}
+
+<h2>Login</h2>
+
+<div id="logged-in" style="display: none;">
+    Please wait while we are preparing your data.
+</div>
+<div id="not-authorised" style="display: none;">
+    <div style="display: block">
+        You haven't authorised our website. You can click the Facebook Login button below to start.
+    </div>
+    <div class="fb-login-button" scope="@Facebook.Web.Helpers.FacebookHelper.Scope()" data-show-faces="true" data-width="400" data-max-rows="1"></div>
+
+    @*    
+    <div style="display: block">
+        @Html.ActionLink("Login", "Login", "Facebook")
+    </div>
+    *@
+</div>
+<div id="not-logged-in" style="display: none;">
+    <div style="display: block">
+        You will need to Login using your Facebook account to access our website. You can click the Facebook Login button below to start.
+    </div>
+    <div class="fb-login-button" scope="@Facebook.Web.Helpers.FacebookHelper.Scope()" data-show-faces="true" data-width="400" data-max-rows="1"></div>
+
+    @*    
+    <div style="display: block">
+        @Html.ActionLink("Login", "Login", "Facebook")
+    </div>
+    *@
+</div>

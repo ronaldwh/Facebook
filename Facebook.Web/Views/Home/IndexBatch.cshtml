@@ -1,0 +1,256 @@
+﻿@model Facebook.Web.Models.HomeIndexModel
+
+@{
+    ViewBag.Title = Model.user.name;
+}
+
+@section facebook{
+    <input id="user-id" type="hidden" value="@(Model.user != null ? Model.user.id : "")" />
+    <div id="fb-root"></div>
+    <script>
+        function ValidateUser(response) {
+            //console.log('validating user id');
+            var currentUserId = document.getElementById('user-id').value;
+            //console.log(userId + ' !== ' + response.authResponse.userID);
+            if (currentUserId !== response.authResponse.userID) {
+                window.location = '/Login';
+            } else {
+                document.getElementById('home').style.display = 'block';
+            }
+        };
+
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '266085756857709', // App ID
+                channelUrl: '//test.ronaldwisnuhariyanto.com/channel.html',
+                status: true, // check login status
+                cookie: true, // enable cookies to allow the server to access the session
+                xfbml: true  // parse XFBML
+            });
+
+            FB.getLoginStatus(function (response) {
+                if (response.status === 'connected') {
+                    // connected
+                    console.log('connected');
+                    ValidateUser(response);
+                } else if (response.status === 'not_authorized') {
+                    // not_authorized
+                    console.log('not_authorized');
+                    document.getElementById('home').style.display = 'none';
+                    window.location = '/Login';
+                } else {
+                    // not_logged_in
+                    console.log('The user isn\'t logged in to Facebook');
+                    document.getElementById('home').style.display = 'none';
+                    window.location = '/Login';
+                }
+            });
+
+            // Additional initialization code here
+            FB.Event.subscribe('auth.authResponseChange', function (response) {
+                if (response.status === 'connected') {
+                    console.log('connected');
+                    ValidateUser(response);
+                } else if (response.status === 'not_authorized') {
+                    // The user is logged in to Facebook
+                    // but has not authenticated your app
+                    console.log('not_authorized');
+                    document.getElementById('home').style.display = 'none';
+                    window.location = '/Login';
+                } else {
+                    console.log('The user isn\'t logged in to Facebook');
+                    document.getElementById('home').style.display = 'none';
+                    window.location = '/Login';
+                }
+            });
+        };
+
+        // Load the SDK Asynchronously
+        (function (d) {
+            var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+            if (d.getElementById(id)) { return; }
+            js = d.createElement('script'); js.id = id; js.async = true;
+            js.src = "//connect.facebook.net/en_US/all.js";
+            ref.parentNode.insertBefore(js, ref);
+        }(document));
+    </script>
+}
+<div id="home" style="display: none">
+    @if (Model != null)
+    {
+        <div class="shadow-border-bottom row clearfix">
+            <h1 class="header">
+                @Model.user.name
+            </h1>
+        </div>
+        
+        <div id="significant-other" class="relationship row clearfix">
+            @if (Model.user.picture != null)
+            {
+                @(Model.user.significant_other == null ? Html.Raw("<div class=\"grid_24\">") : Html.Raw("<div class=\"grid_8\">"))
+                <img src="@Model.user.picture.data.url" alt="@Model.user.name" class="relationship-photo" />
+                @Html.Raw("</div>");
+            }
+            @if (Model.user.significant_other != null)
+            {
+                <div class="relationship-status grid_8">
+                    <label>You are @Model.user.relationship_status to @Model.user.significant_other.name</label>
+                    @if (Model.user.relationship_status.ToLower().Equals("married"))
+                    {
+                        <img src="~/Content/images/love.png" alt="You are @Model.user.relationship_status to @Model.user.significant_other.name" class="relationship-status-icon" />
+                    }
+                </div>
+                    if (Model.user.significant_other.picture != null)
+                    {
+                <div class="grid_8">
+                    <img src="@Model.user.significant_other.picture.data.url" alt="@Model.user.significant_other.name" class="relationship-photo" />
+                </div>
+                    }
+            }
+        </div>
+    
+        <div class="sub-header shadow-border-bottom row clearfix">
+            You have @Model.data.Count Friends!
+        </div>
+        <div class="row clearfix">
+            <nav class="gridlist-toggle">
+                <a href="#" id="grid" title="Show as grid" class="active">&#8862; <span></span></a><a href="#" id="list" title="Show as list">&#8863; <span></span></a>
+            </nav>
+        </div>
+        <div class="gallery row clearfix sortable ">
+            @foreach (var friend in Model.data)
+            {
+                <div id="@friend.id" class="grid_4 card-grid clearfix">
+                    <img src="@friend.picture.data.url" alt="@friend.name" />
+                    <label for="picture">
+                        @friend.name
+                    </label>
+                    <label class="status" style="display: none; margin-left: 5px;">
+@*                        @if (friend.statuses != null)
+                        {
+                            @friend.statuses.data[0].message
+                        }*@
+                    </label>
+                    <label class="quotes" style="display: none; margin-left: 5px;">
+                        @if (friend.quotes != null)
+                        {
+                            @friend.quotes
+                        }
+                    </label>
+                    <label class="location" style="display: none; margin-left: 5px;">
+                        @if (friend.location != null)
+                        {
+                            @("is at " + friend.location.name)
+                        }
+                    </label>
+                    <label class="bio" style="display: none;">
+                        @if (friend.bio != null)
+                        {
+                            @friend.bio
+                        }
+                    </label>
+                </div>
+            }
+            @*
+        @{int column = 6;}
+        @for (int i = 0; i < Model.data.Count; i = i + column)
+        {
+            <div class="row clearfix">
+                @for (int j = i; j < i + column && j < Model.data.Count; j++)
+                {
+                    var friend = Model.data[j];
+                    <div class="grid_4 picture">
+                        <label for="picture">
+                            @friend.first_name @friend.last_name
+                        </label>
+                        <img src="@friend.picture.data.url" alt="@friend.first_name @friend.last_name" />
+                    </div>
+                }
+            </div>                    
+        }
+        *@
+        </div>
+    }
+</div>
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            $('.sortable').sortable({
+                cursor: 'move',
+                //handle: 'img',
+                revert: true
+            });
+
+            $('.gallery .card-grid').hover(
+                function () {
+                    //console.log('hover in');
+                    $(this).find('img').animate({
+                        height: '+=5px',
+                        width: '+=5px'
+                    }, 300);
+                },
+                function () {
+                    //console.log('hover out');
+                    $(this).find('img').animate({
+                        height: '-=5px',
+                        width: '-=5px'
+                    }, 300);
+                }
+            );
+
+            $('#grid').click(function () {
+                $(this).addClass('active');
+                $('#list').removeClass('active');
+
+                $('.gallery > div').toggleClass("grid_4").toggleClass("card-grid").toggleClass("card-list");
+                $('.status,.quotes,.location,.bio').hide();
+
+                return false;
+            });
+
+            $('#list').click(function () {
+                $(this).addClass('active');
+                $('#grid').removeClass('active');
+
+                $('.gallery > div').toggleClass("grid_4").toggleClass("card-grid").toggleClass("card-list");
+                $('.status,.quotes,.location,.bio').show();
+
+                //$('.gallery .card-list').each(function () {
+                //    var control = this;
+                //    console.log('GetUserDetails: ' + control.id);
+                //    $.getJSON('/Facebook/GetUserDetails', { userId: control.id }, function (json) {
+                //        console.log(json);
+                //        if (json.statuses) {
+                //            console.log(json.statuses.data[0].message);
+                //            console.log('#' + control.id + ' .status');
+                //            $('#' + control.id + ' .status').html(json.statuses.data[0].message);
+                //        }
+                //        else {
+                //            console.log('no statuses');
+                //        }
+                //    });
+                //});
+
+                //$('.gallery .card-list').click(function () {
+                //    var control = this;
+                //    console.log('GetUserDetails: ' + control.id);
+                //    $.getJSON('/Facebook/GetUserDetails', { userId: control.id }, function (json) {
+                //        console.log(json);
+                //        if (json.statuses) {
+                //            console.log(json.statuses.data[0].message);
+                //            console.log('#' + control.id + ' .status');
+                //            $('#' + control.id + ' .status').html(json.statuses.data[0].message);
+                //        }
+                //        else {
+                //            console.log('no statuses');
+                //        }
+
+                //        $(control).unbind('click');
+                //    });
+                //});
+
+                return false;
+            });
+        });
+    </script>
+}
